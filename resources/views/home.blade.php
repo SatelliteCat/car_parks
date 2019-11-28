@@ -11,6 +11,11 @@
       <tr>
         <td>{{ $user->name }}</td>
         <td>{{ $user->brand }} {{ $user->model }} {{ $user->color }}</td>
+        @if($user->isparked)
+        <td>На стоянке</td>
+        @else
+        <td>Не на стоянке</td>
+        @endif
         <td>{{ $user->statenum }}</td>
         <td>
           <form action="{{ url('edit/'.$user->id) }}" method="GET">
@@ -32,7 +37,7 @@
       </tr>
       @endforeach
       <tr>
-        <td colspan='3'></td>
+        <td colspan='4'></td>
         <td>
           <form action="{{ url('create') }}" method="GET">
             {{ method_field('GET') }}

@@ -10,7 +10,7 @@
         <h2>Система учёта авто на стоянке</h2>
     </div>
     <div><br></div>
-    <form action="{{ url('/savereg/') }}" method="POST">
+    <form action="{{ url('/savestatus/') }}" method="POST">
         <div class="row">
             <div class="col col-lg-3">
                 <select class="form-control users" name="user">

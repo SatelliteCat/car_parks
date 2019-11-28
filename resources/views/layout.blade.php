@@ -23,7 +23,7 @@
                         <a class="nav-link" href="/create">Добавить запись</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/registration">Учёт авто</a>
+                        <a class="nav-link" href="/carpark">Учёт авто</a>
                     </li>
                 </ul>
             </div>

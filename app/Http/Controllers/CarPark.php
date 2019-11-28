@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Car;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class Registration extends Controller
+class CarPark extends Controller
 {
     public function show()
     {
         // Отображение формы учёта авто
 
-        $users = DB::table('user')->select('id', 'name')->get();
-        $cars = DB::table('car')->select('id', 'user_id', 'isparked', 'statenum')->get();
-        return view('registration', compact('users', 'cars'));
+        $users = User::get_all_users();
+        $cars = Car::get_all_cars();
+        return view('car_park', compact('users', 'cars'));
     }
 
     public function save(Request $request)
@@ -32,19 +33,18 @@ class Registration extends Controller
         if ($validator->fails()) {
             return
                 // redirect('edit/'.$request->id)
-                redirect('/registration')
+                redirect('/carpark')
                 ->withErrors($validator)
                 ->withInput();
         }
 
         // Изменение информации об авто
 
-        DB::table('car')
-            ->where('id', $request->car)
-            ->update([
-                'isparked' => $request->isparked
-            ]);
+        $car = new Car;
+        $car->id = $request->car;
+        $car->isparked = $request->isparked;
+        $car->update_status_car();
 
-        return redirect('/registration');
+        return redirect('/carpark');
     }
 }

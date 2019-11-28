@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Car;
+use App\Models\User;
 
 class Users extends Controller
 {
@@ -17,39 +18,21 @@ class Users extends Controller
 
     public function edit($id)
     {
-        // $id - car
         // Заполнение полей информацией из БД
+        // $id - car
 
-        $data = DB::table('car')
-            ->join('user', 'user.id', '=', 'car.user_id')
-            ->select(
-                'car.id',
-                'car.brand',
-                'car.model',
-                'car.color',
-                'car.statenum',
-                'car.user_id',
-                'user.name',
-                'user.sex',
-                'user.phone',
-                'user.address'
-            )
-            ->whereRaw(
-                'user_id = (select car.user_id from car where car.id=?) and user_id=user.id',
-                [$id]
-            )
-            ->get();
-
-        // echo "<script>console.log('".$data->first()."');</script>";
+        $car_id = new Car;
+        $car_id->id = $id;
+        $data = $car_id->get_join_cars_by_car_id();
 
         return view('form_edit', compact('data'));
     }
 
     public function save($id, Request $request)
     {
-        // $id - user
         // Сохранение данных
         // Проверка полей
+        // $id - user
 
         $validator = Validator::make($request->all(), [
             'name' => 'required_with:phone|between:3,100',
@@ -72,63 +55,46 @@ class Users extends Controller
 
         // Изменение записи
 
+        $user = new User;
+        $user->id = $id;
+        $user->name = $request->name;
+        $user->sex = $request->sex;
+        $user->phone = $request->phone;
+        $user->address = $request->address;
+
+        $car = new Car;
+        $car->id = $request->id;
+        $car->brand = $request->brand;
+        $car->model = $request->model;
+        $car->color = $request->color;
+        $car->statenum = $request->statenum;
+
         if ($id) {
             if ($request->name) {
 
                 // Изменение информации о клиенте
 
-                DB::table('user')
-                    ->where('id', $id)
-                    ->update([
-                        'name' => $request->name,
-                        'sex' => $request->sex,
-                        'phone' => $request->phone,
-                        'address' => $request->address
-                    ]);
+                $user->update_user();
             } elseif ($request->id == 0) {
 
                 // Добавление нового авто
 
-                DB::table('car')
-                    ->insert([
-                        'brand' => $request->brand,
-                        'model' => $request->model,
-                        'color' => $request->color,
-                        'statenum' => $request->statenum,
-                        'user_id' => $id
-                    ]);
+                $car->create_car();
             } else {
 
                 // Изменение информации об авто
 
-                DB::table('car')->where('id', $request->id)->update([
-                    'brand' => $request->brand,
-                    'model' => $request->model,
-                    'color' => $request->color,
-                    'statenum' => $request->statenum
-                ]);
+                $car->update_car();
             }
         } else {
 
             // Создание новой записи
 
-            DB::table('user')
-                ->insert([
-                    'name' => $request->name,
-                    'sex' => $request->sex,
-                    'phone' => $request->phone,
-                    'address' => $request->address
-                ]);
-            $user_id = DB::table('user')->max('id');
-            DB::table('car')
-                ->insert([
-                    'brand' => $request->brand,
-                    'model' => $request->model,
-                    'color' => $request->color,
-                    'statenum' => $request->statenum,
-                    'user_id' => $user_id
-                ]);
+            $user->create_user();
+            $car->user_id = User::get_last_user_id();
+            $car->create_car();
         }
+
         return redirect('/');
     }
 
@@ -136,7 +102,10 @@ class Users extends Controller
     {
         // Удаление записи
 
-        DB::table('car')->where('id', '=', $id)->delete();
+        $car = new Car;
+        $car->id = $id;
+        $car->delete_car();
+
         return redirect('/');
     }
 }
